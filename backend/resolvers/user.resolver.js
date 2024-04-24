@@ -1,18 +1,7 @@
-import { users } from '../dummyData/data.js'
+import User from "../models/user.model.js";
+import bcrypt from "bcryptjs";
+
 const userResolver = {
-  Query: {
-    users: (_, __, { req, res }) => users, // Passport config
-    user: (_, { userId }, ___) => users.find(user => user._id === userId),
-    authUser: async (_, __, context) => {
-      try {
-        const user = await context.getUser();
-        return user;
-      } catch (err) {
-        console.error("Error in authUser: ", err);
-        throw new Error("Internal server error");
-      }
-    },
-  },
   Mutation: {
     signUp: async (_, { input }, context) => {
       try {
@@ -53,7 +42,6 @@ const userResolver = {
     login: async (_, { input }, context) => {
       try {
         const { username, password } = input;
-        if (!username || !password) throw new Error("All fields are required");
         const { user } = await context.authenticate("graphql-local", { username, password });
 
         await context.login(user);
@@ -63,14 +51,13 @@ const userResolver = {
         throw new Error(err.message || "Internal server error");
       }
     },
-
     logout: async (_, __, context) => {
       try {
         await context.logout();
-        context.req.session.destroy((err) => {
+        req.session.destroy((err) => {
           if (err) throw err;
         });
-        context.res.clearCookie("connect.sid");
+        res.clearCookie("connect.sid");
 
         return { message: "Logged out successfully" };
       } catch (err) {
@@ -78,8 +65,29 @@ const userResolver = {
         throw new Error(err.message || "Internal server error");
       }
     },
+  },
+  Query: {
+    authUser: async (_, __, context) => {
+      try {
+        const user = await context.getUser();
+        return user;
+      } catch (err) {
+        console.error("Error in authUser: ", err);
+        throw new Error("Internal server error");
+      }
+    },
+    user: async (_, { userId }) => {
+      try {
+        const user = await User.findById(userId);
+        return user;
+      } catch (err) {
+        console.error("Error in user query:", err);
+        throw new Error(err.message || "Error getting user");
+      }
+    },
+    users: async (_, __, { req, res }) => await User.find(),  // Optional
+  },
+  // TODO => ADD USER/TRANSACTION RELATION
+};
 
-  }
-}
-
-export default userResolver
+export default userResolver;
