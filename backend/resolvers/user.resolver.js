@@ -1,7 +1,7 @@
 import { users } from '../dummyData/data.js'
 const userResolver = {
   Query: {
-    users: (_, __, { req, res }) => users,
+    users: (_, __, { req, res }) => users, // Passport config
     user: (_, { userId }, ___) => users.find(user => user._id === userId),
     authUser: async (_, __, context) => {
       try {
