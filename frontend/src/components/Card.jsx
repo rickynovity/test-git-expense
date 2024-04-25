@@ -17,11 +17,11 @@ const categoryColorMap = {
 	// Add more categories and corresponding color classes as needed
 };
 
-const Card = ({ transaction }) => {
+const Card = ({ transaction, authUser }) => {
 	let { category, amount, location, date, paymentType, description } = transaction;
 	const cardClass = categoryColorMap[category];
 	const [deleteTransaction, { loading }] = useMutation(DELETE_TRANSACTION, {
-		refetchQueries: ["GetTransactions"],
+		refetchQueries: ["GetTransactions", "GetTransactionStatistics"],
 	});
 
 	// Capitalize the first letter of the description
@@ -73,7 +73,7 @@ const Card = ({ transaction }) => {
 				<div className='flex justify-between items-center'>
 					<p className='text-xs text-black font-bold'>{date}</p>
 					<img
-						src={"https://avatar.iran.liara.run/public"}
+						src={authUser?.profilePicture}
 						className='h-8 w-8 border rounded-full'
 						alt=''
 					/>
